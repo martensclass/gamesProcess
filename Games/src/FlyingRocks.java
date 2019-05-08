@@ -11,11 +11,10 @@ public class FlyingRocks extends PApplet {
     ArrayList<Rectangle> rocks = new ArrayList<Rectangle>();
     ArrayList<int[]> move = new ArrayList<int[]>();
     ArrayList<Rectangle> bullets = new ArrayList<Rectangle>();
-    PImage rock, ship, lazer, treasure;
     Random r = new Random();
     int rx, ry;
     int rm1, rm2;
-    Rectangle shipbox, lazerbox, tbox;
+    Rectangle ship, gun, treasure;
     int health = 400;
     int dirx=0, diry=0;
     boolean showT = true, lazeron=false;
@@ -50,16 +49,13 @@ public class FlyingRocks extends PApplet {
 
     public void setup() {
         size(640, 480, JAVA2D);
-        rock = loadImage("rock.png");
-        ship = loadImage("ship.png");
-        lazer = loadImage("gun.png");
-        treasure = loadImage("treasure.png");
+        
         for (int i = 0; i < 1; i++) {
             addRock();
         }
-        shipbox = new Rectangle(this, 10,400,ship.width, ship.height);
-        lazerbox = new Rectangle(this, -100, -100, lazer.width, lazer.height);
-        tbox = new Rectangle(this, 200,100, treasure.width, treasure.height);
+        ship = new Rectangle(this, loadImage("ship.png"),10,400);
+        gun = new Rectangle(this, loadImage("gun.png"), -100, -100);
+        treasure = new Rectangle(this, loadImage("treasure.png"),200,100);
         noCursor();
     }
     
@@ -75,7 +71,7 @@ public class FlyingRocks extends PApplet {
         if (rm2 % 2 == 1) {
             rm2 = -rm2;
         }
-        rocks.add(new Rectangle(this, rx, ry, rock.width, rock.height));
+        rocks.add(new Rectangle(this, loadImage("rock.png"), rx, ry));
         int x[] = {rm1, rm2};
         move.add(x);
     }
@@ -89,35 +85,26 @@ public class FlyingRocks extends PApplet {
     public void Treasure(){
         if(showT==false)
         {
-            tbox.x=-200;
-            tbox.y=-200;
+            treasure.x=-200;
+            treasure.y=-200;
             if(frameCount%180==0){
-                 tbox.x = r.nextInt(550);
-                 tbox.y = r.nextInt(50) + 50;
+                 treasure.x = r.nextInt(550);
+                 treasure.y = r.nextInt(50) + 50;
                  showT = true;
             }
         }
-        image(treasure, tbox.x, tbox.y);
+        treasure.draw();
       
         
     }
     
   
     public void keyPressed(){
-        // if(keyCode == UP) diry = -3;
-        // else if(keyCode ==DOWN) diry = 3;
-        if(keyCode ==LEFT) dirx = -5;
-         else if(keyCode ==RIGHT) dirx = 5;
-         
-         else if(key==' ' && bullets.size()<3){
-              bullets.add(new Rectangle(this,shipbox.x+30, shipbox.y-10,5,5));
-          }
-        
-          
+          ship.move();
     }
     
     public void mousePressed(){
-         bullets.add(new Rectangle(this,shipbox.x+30, shipbox.y-10,5,5));
+         bullets.add(new Rectangle(this,ship.x+30, ship.y-10,5,5));
     }
     
     public void keyReleased(){
@@ -127,38 +114,41 @@ public class FlyingRocks extends PApplet {
 
     public void draw() {
         if(lazeron){
-            lazerbox.x = mouseX;
-            lazerbox.y = mouseY;
+            gun.x = mouseX;
+            gun.y = mouseY;
             lazertime++;
             if(lazertime==300){
                 lazeron=false;
-                lazerbox.x=-100;
-                lazerbox.y=-100;
+                gun.x=-100;
+                gun.y=-100;
                 lazertime=0;
             }
         }
         
         background(240, 240, 220); //light tan
         drawStatus();
-        image(lazer, lazerbox.x, lazerbox.y);
+        gun.draw();
         Treasure();
         
         if(frameCount % 180 ==0)
            addRock();
        
         
-        //shipbox.moveUD(diry);
-        shipbox.moveLR(dirx);
+        if(keyPressed){
+            ship.move();
+        }
+       
+        
         /*
-       if(shipbox.hitWall()=='t' || shipbox.hitWall()=='b')
-        shipbox.moveUD(-diry);    
+       if(ship.hitWall()=='t' || ship.hitWall()=='b')
+        ship.moveUD(-diry);    
       
-       if(shipbox.hitWall()=='l' || shipbox.hitWall()=='r')
-        shipbox.moveLR(-dirx);
+       if(ship.hitWall()=='l' || ship.hitWall()=='r')
+        ship.moveLR(-dirx);
      */
-        shipbox.x = mouseX;
+        //ship.x = mouseX;
 
-        image(ship, shipbox.x, shipbox.y, 64, 64);
+        ship.draw();
         fill(255,0,0);
         for (int i = 0; i < bullets.size(); i++) {
             Rectangle b = bullets.get(i);
@@ -167,7 +157,7 @@ public class FlyingRocks extends PApplet {
             if(b.y < -10){
                 bullets.remove(b);
             }
-            else if(b.collidesWith(tbox)){
+            else if(b.collidesWith(treasure)){
                 showT=false;
                 bullets.remove(b);
                 tscore++;
@@ -180,8 +170,8 @@ public class FlyingRocks extends PApplet {
         
         for (int i = 0; i < rocks.size(); i++) {
             Rectangle r = rocks.get(i);
-            image(rock, r.x, r.y);
-            if (r.collidesWith(lazerbox)) {
+            r.draw();
+            if (r.collidesWith(gun)) {
                 rocks.remove(r);
                 move.remove(i);
             } else {
@@ -189,7 +179,7 @@ public class FlyingRocks extends PApplet {
                 r.moveLR(dir[0]);
                 r.moveUD(dir[1]);
                 move.set(i, checkDir(dir, r));
-                if (r.collidesWith(shipbox)) {
+                if (r.collidesWith(ship)) {
                     health--;
                 }
                 if (health == 0) {

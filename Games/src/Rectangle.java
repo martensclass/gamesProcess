@@ -1,8 +1,10 @@
 import processing.core.PApplet;
+import processing.core.PImage;
 
 public class Rectangle {
 
     public int x, y, w, h;
+    PImage image;
     PApplet host;
 
     public Rectangle(PApplet pa, int xp, int yp, int wp, int hp) {
@@ -11,8 +13,27 @@ public class Rectangle {
         y = yp;
         w = wp;
         h = hp;
+        image=null;
     }
-
+    
+    public Rectangle(PApplet pa,  PImage i, int xp, int yp) {
+        host = pa;
+        x = xp;
+        y = yp;
+        w = i.width;
+        h = i.height;
+        image=i;
+    }
+    
+    
+    
+    public void move(){
+       
+             if(host.keyCode == host.LEFT) x-=5;
+         else if(host.keyCode == host.RIGHT) x+=5;
+        
+    }
+    
     public void move(int xp, int yp) {
         x = xp;
         y = yp;
@@ -52,8 +73,10 @@ public class Rectangle {
     }
     
     public void draw(){
-        host.rect(x, y, w, h);
-        
+        if(image==null)
+            host.rect(x, y, w, h);
+        else
+            host.image(image, x, y);
     }
     
 }
